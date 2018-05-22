@@ -21,7 +21,7 @@ std::vector< glm::vec3 > vertices;
 std::vector< glm::vec2 > uvs;
 std::vector< glm::vec3 > normals;
 
-//Estructura
+//SoporteSuelo
 std::vector< glm::vec3 > vertices1;
 std::vector< glm::vec2 > uvs1;
 std::vector< glm::vec3 > normals1;
@@ -33,17 +33,13 @@ std::vector< glm::vec3 > normals2;
 
 glm::vec3 lightPos;
 
-
 extern bool loadOBJ(const char * path,
 	std::vector < glm::vec3 > & out_vertices,
 	std::vector < glm::vec2 > & out_uvs,
 	std::vector < glm::vec3 > & out_normals
 );
 
-
-
 bool show_test_window = false;
-
 
 bool light_moves = true;
 void GUI() {
@@ -94,14 +90,18 @@ namespace MyLoadedModel {
 	void updateModel(const glm::mat4& transform);
 	void drawModel(double currentTime);
 }
-
 namespace MyLoadedModel1 {
 	void setupModel1();
 	void cleanupModel1();
 	void updateModel1(const glm::mat4& transform);
 	void drawModel1(double currentTime);
 }
-
+namespace MyLoadedModel2 {
+	void setupModel2();
+	void cleanupModel2();
+	void updateModel2(const glm::mat4& transform);
+	void drawModel2(double currentTime);
+}
 
 namespace Sphere {
 	void setupSphere(glm::vec3 pos, float radius);
@@ -184,8 +184,11 @@ void GLinit(int width, int height) {
 
 	//OBJECTS
 	bool res = loadOBJ("models/test_cabin_v3.obj", vertices, uvs, normals);
-	bool res1 = loadOBJ("models/soporte.obj", vertices1, uvs1, normals1);
 	MyLoadedModel::setupModel();
+	bool res1 = loadOBJ("models/soporte.obj", vertices1, uvs1, normals1);
+	MyLoadedModel1::setupModel1();
+	bool res2 = loadOBJ("models/soporteCabinas.obj", vertices2, uvs2, normals2);
+	MyLoadedModel2::setupModel2();
 	
 }
 
@@ -219,6 +222,7 @@ void GLrender(double currentTime) {
 	Sphere::drawSphere();*/
 	MyLoadedModel::drawModel(currentTime);
 	MyLoadedModel1::drawModel1(currentTime);
+	MyLoadedModel2::drawModel2(currentTime);
 
 	ImGui::Render();
 }
@@ -1048,4 +1052,206 @@ void main() {\n\
 
 
 }
+namespace MyLoadedModel1 {
+	GLuint modelVao;
+	GLuint modelVbo[3];
+	GLuint modelShaders[2];
+	GLuint modelProgram;
+	glm::mat4 objMat = glm::mat4(1.f);
 
+	const char* model_vertShader =
+		"#version 330\n\
+	in vec3 in_Position;\n\
+	in vec3 in_Normal;\n\
+	uniform vec3 lPos;\n\
+	out vec3 lDir;\n\
+	out vec4 vert_Normal;\n\
+	uniform mat4 objMat;\n\
+	uniform mat4 mv_Mat;\n\
+	uniform mat4 mvpMat;\n\
+	void main() {\n\
+		gl_Position = mvpMat * objMat * vec4(in_Position, 1.0);\n\
+		vert_Normal = mv_Mat * objMat * vec4(in_Normal, 0.0);\n\
+		lDir = normalize(lPos - gl_Position.xyz );\n\
+	}";
+
+
+	const char* model_fragShader =
+		"#version 330\n\
+in vec4 vert_Normal;\n\
+in vec3 lDir;\n\
+out vec4 out_Color;\n\
+uniform mat4 mv_Mat;\n\
+uniform vec4 color;\n\
+void main() {\n\
+	out_Color = vec4(color.xyz * dot(vert_Normal, mv_Mat*vec4(lDir.x, lDir.y, lDir.z, 0.0)) , 1.0 );\n\
+}";
+	void setupModel1() {
+		glGenVertexArrays(1, &modelVao);
+		glBindVertexArray(modelVao);
+		glGenBuffers(3, modelVbo);
+
+		glBindBuffer(GL_ARRAY_BUFFER, modelVbo[0]);
+
+		glBufferData(GL_ARRAY_BUFFER, vertices1.size() * sizeof(glm::vec3), &vertices1[0], GL_STATIC_DRAW);
+		glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, modelVbo[1]);
+
+		glBufferData(GL_ARRAY_BUFFER, normals1.size() * sizeof(glm::vec3), &normals1[0], GL_STATIC_DRAW);
+		glVertexAttribPointer((GLuint)1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(1);
+
+		glBindVertexArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+		modelShaders[0] = compileShader(model_vertShader, GL_VERTEX_SHADER, "cubeVert");
+		modelShaders[1] = compileShader(model_fragShader, GL_FRAGMENT_SHADER, "cubeFrag");
+
+		modelProgram = glCreateProgram();
+		glAttachShader(modelProgram, modelShaders[0]);
+		glAttachShader(modelProgram, modelShaders[1]);
+		glBindAttribLocation(modelProgram, 0, "in_Position");
+		glBindAttribLocation(modelProgram, 1, "in_Normal");
+		linkProgram(modelProgram);
+	}
+	void cleanupModel1() {
+
+		glDeleteBuffers(2, modelVbo);
+		glDeleteVertexArrays(1, &modelVao);
+
+		glDeleteProgram(modelProgram);
+		glDeleteShader(modelShaders[0]);
+		glDeleteShader(modelShaders[1]);
+	}
+	void updateModel1(const glm::mat4& transform) {
+		objMat = transform;
+	}
+	void drawModel1(double currentTime) {
+
+		glBindVertexArray(modelVao);
+		glUseProgram(modelProgram);
+
+		glm::mat4 s = glm::scale(glm::mat4(1.f), glm::vec3(0.005f, 0.005f, 0.004f));
+		//MATRIZ FINAl
+		objMat = s;
+
+		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "objMat"), 1, GL_FALSE, glm::value_ptr(objMat));
+		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mv_Mat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_modelView));
+		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mvpMat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_MVP));
+		glUniform3f(glGetUniformLocation(modelProgram, "lPos"), lightPos.x, lightPos.y, lightPos.z);
+		glUniform4f(glGetUniformLocation(modelProgram, "color"), 0.5f, .5f, 1.f, 0.f);
+
+		glDrawArrays(GL_TRIANGLES, 0, 10000);
+
+		glUseProgram(0);
+		glBindVertexArray(0);
+
+	}
+
+
+}
+namespace MyLoadedModel2 {
+	GLuint modelVao;
+	GLuint modelVbo[3];
+	GLuint modelShaders[2];
+	GLuint modelProgram;
+	glm::mat4 objMat = glm::mat4(1.f);
+
+	const char* model_vertShader =
+		"#version 330\n\
+	in vec3 in_Position;\n\
+	in vec3 in_Normal;\n\
+	uniform vec3 lPos;\n\
+	out vec3 lDir;\n\
+	out vec4 vert_Normal;\n\
+	uniform mat4 objMat;\n\
+	uniform mat4 mv_Mat;\n\
+	uniform mat4 mvpMat;\n\
+	void main() {\n\
+		gl_Position = mvpMat * objMat * vec4(in_Position, 1.0);\n\
+		vert_Normal = mv_Mat * objMat * vec4(in_Normal, 0.0);\n\
+		lDir = normalize(lPos - gl_Position.xyz );\n\
+	}";
+
+
+	const char* model_fragShader =
+		"#version 330\n\
+in vec4 vert_Normal;\n\
+in vec3 lDir;\n\
+out vec4 out_Color;\n\
+uniform mat4 mv_Mat;\n\
+uniform vec4 color;\n\
+void main() {\n\
+	out_Color = vec4(color.xyz * dot(vert_Normal, mv_Mat*vec4(lDir.x, lDir.y, lDir.z, 0.0)) , 1.0 );\n\
+}";
+	void setupModel2() {
+		glGenVertexArrays(1, &modelVao);
+		glBindVertexArray(modelVao);
+		glGenBuffers(3, modelVbo);
+
+		glBindBuffer(GL_ARRAY_BUFFER, modelVbo[0]);
+
+		glBufferData(GL_ARRAY_BUFFER, vertices2.size() * sizeof(glm::vec3), &vertices2[0], GL_STATIC_DRAW);
+		glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, modelVbo[1]);
+
+		glBufferData(GL_ARRAY_BUFFER, normals2.size() * sizeof(glm::vec3), &normals2[0], GL_STATIC_DRAW);
+		glVertexAttribPointer((GLuint)1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(1);
+
+		glBindVertexArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+		modelShaders[0] = compileShader(model_vertShader, GL_VERTEX_SHADER, "cubeVert");
+		modelShaders[1] = compileShader(model_fragShader, GL_FRAGMENT_SHADER, "cubeFrag");
+
+		modelProgram = glCreateProgram();
+		glAttachShader(modelProgram, modelShaders[0]);
+		glAttachShader(modelProgram, modelShaders[1]);
+		glBindAttribLocation(modelProgram, 0, "in_Position");
+		glBindAttribLocation(modelProgram, 1, "in_Normal");
+		linkProgram(modelProgram);
+	}
+	void cleanupModel2() {
+
+		glDeleteBuffers(2, modelVbo);
+		glDeleteVertexArrays(1, &modelVao);
+
+		glDeleteProgram(modelProgram);
+		glDeleteShader(modelShaders[0]);
+		glDeleteShader(modelShaders[1]);
+	}
+	void updateModel2(const glm::mat4& transform) {
+		objMat = transform;
+	}
+	void drawModel2(double currentTime) {
+
+		glBindVertexArray(modelVao);
+		glUseProgram(modelProgram);
+
+		//ESCALAR Y ROTAR
+		glm::mat4 s = glm::scale(glm::mat4(1.f), glm::vec3(0.0035f, 0.0035f, 0.0035f));		glm::mat4 rot =	glm::rotate(glm::mat4(), (float)(0.5f*currentTime),	glm::vec3(0.f, 0.f, 1.f));
+		//MATRIZ FINAl
+		objMat = rot * s;
+
+		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "objMat"), 1, GL_FALSE, glm::value_ptr(objMat));
+		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mv_Mat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_modelView));
+		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mvpMat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_MVP));
+		glUniform3f(glGetUniformLocation(modelProgram, "lPos"), lightPos.x, lightPos.y, lightPos.z);
+		glUniform4f(glGetUniformLocation(modelProgram, "color"), 0.5f, .5f, 1.f, 0.f);
+
+		glDrawArrays(GL_TRIANGLES, 0, 20000);
+
+		glUseProgram(0);
+		glBindVertexArray(0);
+
+	}
+
+
+}

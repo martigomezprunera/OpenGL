@@ -4,6 +4,7 @@
 #include <imgui\imgui.h>
 #include <imgui\imgui_impl_sdl_gl3.h>
 #include <cstdio>
+#include <iostream>
 
 #include "GL_framework.h"
 
@@ -17,7 +18,7 @@ extern void GLmousecb(MouseEvent ev);
 extern void GLResize(int width, int height);
 extern void GLinit(int width, int height);
 extern void GLcleanup();
-extern void GLrender(double currentTime);
+extern void GLrender(double currentTime, int counter);
 
 
 extern void myRenderCode(double currentTime);
@@ -96,7 +97,8 @@ int main(int argc, char** argv) {
 	// Setup ImGui binding
 	ImGui_ImplSdlGL3_Init(mainwindow);
 
-
+	//VARIABLEs
+	int counter = 1;
 
 	bool quit_app = false;
 	while (!quit_app) {
@@ -111,6 +113,30 @@ int main(int argc, char** argv) {
 				break;
 			case SDL_QUIT:
 				quit_app = true;
+				break;
+			case SDL_KEYDOWN:
+				if (eve.key.keysym.sym == SDLK_a)
+				{
+					if (counter == 16)
+					{
+						counter = 16;
+					}
+					else
+					{
+						counter++;
+					}
+				}
+				else if (eve.key.keysym.sym == SDLK_z)
+				{
+					if (counter == 1)
+					{
+						counter = 1;
+					}
+					else
+					{
+						counter--;
+					}
+				}
 				break;
 			}
 		}
@@ -132,7 +158,7 @@ int main(int argc, char** argv) {
 
 
 		double currentTime = (double)SDL_GetTicks() / 1000.0;
-		GLrender(currentTime);
+		GLrender(currentTime, counter);
 		
 		//double currentTime = (double) SDL_GetTicks() / 1000.0;
 		//myRenderCode(currentTime);

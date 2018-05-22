@@ -35,6 +35,13 @@ namespace ClothMesh {
 	extern void drawClothMesh();
 }
 
+namespace Cube {
+	extern void setupCube();
+	extern void cleanupCube();
+	extern void updateCube(const glm::mat4& transform);
+	extern void drawCube(double currentTime);
+}
+
 namespace MyLoadedModel {
 	extern void setupModel();
 	extern void cleanupModel();

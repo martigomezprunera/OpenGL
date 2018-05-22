@@ -14,6 +14,10 @@
 
 #define M_PI 3.14159265358979323846
 
+//GLOBAL VARIABLES
+glm::mat4 myObjMat = glm::mat4(1.f);
+
+
 //variables to load an object:
 
 //Cabins
@@ -55,7 +59,9 @@ glm::vec3 objPosChicken;
 glm::vec3 upVec;
 
 //CAMPOS
+//glm::vec3 camPos = glm::vec3(8.9f, 17.9f, 1.f);
 glm::vec3 camPos = glm::vec3(1.f, 1.f, 1.f);;
+glm::vec4 camPosAux;
 
 //VECTOR AUX
 glm::vec4 aux = glm::vec4(1.f, 1.f, 1.f, 1.f);
@@ -228,8 +234,8 @@ void GLinit(int width, int height) {
 
 	//VARIABLES INICIALIZADAS
 	upVec.x = 0;
-	upVec.y = 0;
-	upVec.z = 1;
+	upVec.y = 1;
+	upVec.z = 0;
 
 	//CUBE
 	Cube::setupCube();
@@ -262,8 +268,8 @@ void GLrender(double currentTime, int counter) {
 
 	RV::_modelView = glm::mat4(1.f);
 	RV::_modelView = glm::translate(RV::_modelView, glm::vec3(RV::panv[0], 20.f+RV::panv[1], RV::panv[2]));
-	RV::_modelView = glm::rotate(RV::_modelView, RV::rota[1], glm::vec3(1.f, 0.f, 0.f));
-	RV::_modelView = glm::rotate(RV::_modelView, RV::rota[0], glm::vec3(0.f, 1.f, 0.f));
+	RV::_modelView = glm::rotate(RV::_modelView, glm::radians(30.f), glm::vec3(0.f, 1.f, 0.f));
+	//RV::_modelView = glm::rotate(RV::_modelView, RV::rota[0], glm::vec3(0.f, 1.f, 0.f));
 
 
 	// render code
@@ -285,7 +291,7 @@ void GLrender(double currentTime, int counter) {
 	}
 	else if (counter == 3)
 	{
-		RV::_modelView = glm::lookAt(camPos, objPosTrump, upVec);
+		RV::_modelView = glm::lookAt(glm::vec3(camPos.x, camPos.y, camPos.z), glm::vec3(objPosTrump.x, objPosTrump.y, objPosTrump.z), glm::vec3(0.0f, 1.f, 0.f));
 	}
 
 	if (counter > 1)
@@ -1217,7 +1223,8 @@ out vec4 out_Color;\n\
 uniform mat4 mv_Mat;\n\
 uniform vec4 color;\n\
 void main() {\n\
-	out_Color = vec4(color.xyz * dot(vert_Normal, mv_Mat*vec4(lDir.x, lDir.y, lDir.z, 0.0)) , 1.0 );\n\
+	//out_Color = vec4(color.xyz * dot(vert_Normal, mv_Mat*vec4(lDir.x, lDir.y, lDir.z, 0.0)) , 1.0 );\n\
+	out_Color = vec4(0.0, 0.0, 1.0, 0.f);\n\
 }";
 	void setupModel() {
 		glGenVertexArrays(1, &modelVao);
@@ -1491,7 +1498,7 @@ void main() {\n\
 		glUseProgram(modelProgram);
 
 		//ESCALAR Y ROTAR
-		glm::mat4 s = glm::scale(glm::mat4(1.f), glm::vec3(0.0035f, 0.0035f, 0.0035f));
+		glm::mat4 s = glm::scale(glm::mat4(1.f), glm::vec3(0.0032f, 0.0032f, 0.0032f));
 		glm::mat4 rot =	glm::rotate(glm::mat4(), (float)(0.5f*currentTime),	glm::vec3(0.f, 0.f, 1.f));
 
 		//MATRIZ FINAl
@@ -1550,7 +1557,8 @@ out vec4 out_Color;\n\
 uniform mat4 mv_Mat;\n\
 uniform vec4 color;\n\
 void main() {\n\
-	out_Color = vec4(color.xyz * dot(vert_Normal, mv_Mat*vec4(lDir.x, lDir.y, lDir.z, 0.0)) , 1.0 );\n\
+	//out_Color = vec4(color.xyz * dot(vert_Normal, mv_Mat*vec4(lDir.x, lDir.y, lDir.z, 0.0)) , 1.0 );\n\
+	out_Color = vec4(1.0f, 1.f, 0.f, 1.0 );\n\
 }";
 	void setupModel3() {
 		glGenVertexArrays(1, &modelVao);
@@ -1673,7 +1681,8 @@ out vec4 out_Color;\n\
 uniform mat4 mv_Mat;\n\
 uniform vec4 color;\n\
 void main() {\n\
-	out_Color = vec4(color.xyz * dot(vert_Normal, mv_Mat*vec4(lDir.x, lDir.y, lDir.z, 0.0)) , 1.0 );\n\
+	//out_Color = vec4(color.xyz * dot(vert_Normal, mv_Mat*vec4(lDir.x, lDir.y, lDir.z, 0.0)) , 1.0 );\n\
+	out_Color = vec4(0.5f, 0.5f, 0.8f, 1.0f);\n\
 }";
 	void setupModel4() {
 		glGenVertexArrays(1, &modelVao);
@@ -1747,6 +1756,16 @@ void main() {\n\
 			objPosTrumpAux = objMat * aux;
 			//VEC4 TO VEC3
 			objPosTrump = objPosTrumpAux;
+
+			//TRANSLATE ONLY CAMPOS
+			camPosAux = t * aux;
+			//VEC4 TO VEC3
+			camPos = camPosAux;
+
+			//MOVE CAMERA 
+			camPos.x = (camPos.x + 3.f);
+			camPos.y = camPos.y - 1.f;
+			//camPos.z = camPos.z - 1.f;
 
 			glUniformMatrix4fv(glGetUniformLocation(modelProgram, "objMat"), 1, GL_FALSE, glm::value_ptr(objMat));
 			glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mv_Mat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_modelView));

@@ -88,7 +88,7 @@ void GUI() {
 	ImGui::Begin("Simulation Parameters", &show, 0);
 
 	// Do your GUI code here....
-	/*{
+	{
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);//FrameRate
 
 
@@ -98,16 +98,16 @@ void GUI() {
 		}
 
 
-	}*/
+	}
 	// .........................
 
 	ImGui::End();
 
 	// Example code -- ImGui test window. Most of the sample code is in ImGui::ShowTestWindow()
-	/*if (show_test_window) {
+	if (show_test_window) {
 		ImGui::SetNextWindowPos(ImVec2(650, 60), ImGuiSetCond_FirstUseEver);
 		ImGui::ShowTestWindow(&show_test_window);
-	}*/
+	}
 }
 
 ///////// fw decl
@@ -243,16 +243,20 @@ void GLinit(int width, int height) {
 	Cube::setupCube();
 
 	//OBJECTS
-	bool res = loadOBJ("models/test_cabin_v3.obj", vertices, uvs, normals);
+	bool res = loadOBJ("models/test_cabin_v4.obj", vertices, uvs, normals);
 	MyLoadedModel::setupModel();
-	bool res1 = loadOBJ("models/soporte.obj", vertices1, uvs1, normals1);
+	bool res1 = loadOBJ("models/soportev1.obj", vertices1, uvs1, normals1);
 	MyLoadedModel1::setupModel1();
-	bool res2 = loadOBJ("models/soporteCabinas.obj", vertices2, uvs2, normals2);
+	bool res2 = loadOBJ("models/soporteCabinasv1.obj", vertices2, uvs2, normals2);
 	MyLoadedModel2::setupModel2();
-	bool res3 = loadOBJ("models/chicken.obj", vertices3, uvs3, normals3);
+	bool res3 = loadOBJ("models/chickenv1.obj", vertices3, uvs3, normals3);
 	MyLoadedModel3::setupModel3();
-	bool res4 = loadOBJ("models/trump.obj", vertices4, uvs4, normals4);
+	bool res4 = loadOBJ("models/trumpv1.obj", vertices4, uvs4, normals4);
 	MyLoadedModel4::setupModel4();
+
+	//SOL
+	lightPos = glm::vec3(40, 40, 0);
+	Sphere::setupSphere(lightPos, 1.0f);
 	
 }
 
@@ -260,7 +264,7 @@ void GLcleanup() {
 	/*Box::cleanupCube();
 	Axis::cleanupAxis();*/
 	MyLoadedModel::cleanupModel();
-	//Sphere::cleanupSphere();
+	Sphere::cleanupSphere();
 
 
 }
@@ -278,11 +282,7 @@ void GLrender(double currentTime, int counter) {
 	/*Box::drawCube();
 	Axis::drawAxis();*/
 
-	/*if(light_moves)
-		lightPos = glm::vec3(40 * cos((float)currentTime),40 * sin((float)currentTime), 0);
-
-	Sphere::updateSphere(lightPos, 1.0f);
-	Sphere::drawSphere();*/
+	/**/
 
 	if (counter == 1)
 	{
@@ -319,6 +319,14 @@ void GLrender(double currentTime, int counter) {
 		RV::_modelView = glm::lookAt(glm::vec3((20 * cos(2 * M_PI*0.08*currentTime + (2 * M_PI / 20))), (20 * sin(2 * M_PI*0.08*currentTime + (2 * M_PI / 20))) + 0.5, 0),
 			glm::vec3((20 * cos(2 * M_PI*0.08*currentTime + (2 * 3.14f / 20))), (20 * sin(2 * M_PI*0.08*currentTime + (2 * 3.14f / 20))), 0),
 			glm::vec3(-cos(2 * M_PI*0.03*currentTime), 0.f, sin(2 * M_PI*0.03*currentTime)));
+	}
+	else if (counter == 6)
+	{
+		if (light_moves)
+			lightPos = glm::vec3(25 * sin((float)currentTime), 25 * cos((float)currentTime), 0);
+
+		Sphere::updateSphere(lightPos, 1.0f);
+		Sphere::drawSphere();
 	}
 
 	if (counter > 1)
@@ -1237,23 +1245,23 @@ namespace MyLoadedModel {
 	uniform mat4 mv_Mat;\n\
 	uniform mat4 mvpMat;\n\
 	void main() {\n\
-		gl_Position = mvpMat * objMat * vec4(in_Position, 1.0);\n\
-		vert_Normal = mv_Mat * objMat * vec4(in_Normal, 0.0);\n\
-		lDir = normalize(lPos - gl_Position.xyz );\n\
-	}";
+	gl_Position = mvpMat * objMat * vec4(in_Position, 1.0);\n\
+	//gl_Position = objMat * vec4(in_Position, 1.0);\n\
+	vert_Normal = mv_Mat * objMat * vec4(in_Normal, 0.0);\n\
+	lDir = normalize(lPos - gl_Position.xyz );\n\
+	}";
 
 
 	const char* model_fragShader =
 		"#version 330\n\
-in vec4 vert_Normal;\n\
-in vec3 lDir;\n\
-out vec4 out_Color;\n\
-uniform mat4 mv_Mat;\n\
-uniform vec4 color;\n\
-void main() {\n\
-	//out_Color = vec4(color.xyz * dot(vert_Normal, mv_Mat*vec4(lDir.x, lDir.y, lDir.z, 0.0)) , 1.0 );\n\
-	out_Color = vec4(0.0, 0.0, 1.0, 0.f);\n\
-}";
+	in vec4 vert_Normal;\n\
+	in vec3 lDir;\n\
+	out vec4 out_Color;\n\
+	uniform mat4 mv_Mat;\n\
+	uniform vec4 color;\n\
+	void main() {\n\
+	out_Color = vec4(color.xyz * dot(vert_Normal, mv_Mat*vec4(lDir.x, lDir.y, lDir.z, 0.0)) , 1.0 );\n\
+	}";
 	void setupModel() {
 		glGenVertexArrays(1, &modelVao);
 		glBindVertexArray(modelVao);
@@ -1322,7 +1330,7 @@ void main() {\n\
 			//TRASLACION
 			glm::mat4 t = glm::translate(glm::mat4(1.0f), glm::vec3(x, y, z));
 			//MATRIZ FINAl
-			cabinas[i] = t * s;
+			cabinas[i] = t;
 
 			//MATRIX4 TO VEC4
 			objPosCabinaAux = cabinas[1] * aux;
@@ -1343,7 +1351,7 @@ void main() {\n\
 			glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mv_Mat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_modelView));
 			glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mvpMat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_MVP));
 			glUniform3f(glGetUniformLocation(modelProgram, "lPos"), lightPos.x, lightPos.y, lightPos.z);
-			glUniform4f(glGetUniformLocation(modelProgram, "color"), 0.5f, .5f, 1.f, 0.f);
+			glUniform4f(glGetUniformLocation(modelProgram, "color"), 0.0f, 1.0f, 0.f, 0.f);
 
 			glDrawArrays(GL_TRIANGLES, 0, 10000);
 		}
@@ -1442,13 +1450,13 @@ void main() {\n\
 
 		glm::mat4 s = glm::scale(glm::mat4(1.f), glm::vec3(0.005f, 0.005f, 0.004f));
 		//MATRIZ FINAl
-		objMat = s;
+		//objMat = s;
 
 		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "objMat"), 1, GL_FALSE, glm::value_ptr(objMat));
 		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mv_Mat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_modelView));
 		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mvpMat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_MVP));
 		glUniform3f(glGetUniformLocation(modelProgram, "lPos"), lightPos.x, lightPos.y, lightPos.z);
-		glUniform4f(glGetUniformLocation(modelProgram, "color"), 0.5f, .5f, 1.f, 0.f);
+		glUniform4f(glGetUniformLocation(modelProgram, "color"), 1.0f, 1.0f, 1.0f, 0.f);
 
 		glDrawArrays(GL_TRIANGLES, 0, 10000);
 
@@ -1543,17 +1551,17 @@ void main() {\n\
 		glUseProgram(modelProgram);
 
 		//ESCALAR Y ROTAR
-		glm::mat4 s = glm::scale(glm::mat4(1.f), glm::vec3(0.0032f, 0.0032f, 0.0032f));
+		//glm::mat4 s = glm::scale(glm::mat4(1.f), glm::vec3(0.0032f, 0.0032f, 0.0032f));
 		glm::mat4 rot =	glm::rotate(glm::mat4(), (float)(0.5f*currentTime),	glm::vec3(0.f, 0.f, 1.f));
 
 		//MATRIZ FINAl
-		objMat = rot * s;
+		objMat = rot;
 
 		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "objMat"), 1, GL_FALSE, glm::value_ptr(objMat));
 		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mv_Mat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_modelView));
 		glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mvpMat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_MVP));
 		glUniform3f(glGetUniformLocation(modelProgram, "lPos"), lightPos.x, lightPos.y, lightPos.z);
-		glUniform4f(glGetUniformLocation(modelProgram, "color"), 0.5f, .5f, 1.f, 0.f);
+		glUniform4f(glGetUniformLocation(modelProgram, "color"), 1.0f, 1.0f, 1.f, 0.f);
 
 		glDrawArrays(GL_TRIANGLES, 0, 20000);
 
@@ -1602,8 +1610,8 @@ out vec4 out_Color;\n\
 uniform mat4 mv_Mat;\n\
 uniform vec4 color;\n\
 void main() {\n\
-	//out_Color = vec4(color.xyz * dot(vert_Normal, mv_Mat*vec4(lDir.x, lDir.y, lDir.z, 0.0)) , 1.0 );\n\
-	out_Color = vec4(1.0f, 1.f, 0.f, 1.0 );\n\
+	out_Color = vec4(color.xyz * dot(vert_Normal, mv_Mat*vec4(lDir.x, lDir.y, lDir.z, 0.0)) , 1.0 );\n\
+	//out_Color = vec4(1.0f, 1.f, 0.f, 1.0 );\n\
 }";
 	void setupModel3() {
 		glGenVertexArrays(1, &modelVao);
@@ -1671,7 +1679,7 @@ void main() {\n\
 			//TRASLACION
 			glm::mat4 t = glm::translate(glm::mat4(1.0f), glm::vec3(x, y, z));
 			//MATRIZ FINAl
-			objMat = t * s;
+			objMat = t;
 
 			//MATRIX4 TO VEC4
 			objPosChickenAux = objMat * aux;
@@ -1692,7 +1700,7 @@ void main() {\n\
 			glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mv_Mat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_modelView));
 			glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mvpMat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_MVP));
 			glUniform3f(glGetUniformLocation(modelProgram, "lPos"), lightPos.x, lightPos.y, lightPos.z);
-			glUniform4f(glGetUniformLocation(modelProgram, "color"), 0.5f, .5f, 1.f, 0.f);
+			glUniform4f(glGetUniformLocation(modelProgram, "color"), 1.0f, 1.0f, 0.f, 0.f);
 
 			glDrawArrays(GL_TRIANGLES, 0, 20000);
 
@@ -1741,8 +1749,8 @@ out vec4 out_Color;\n\
 uniform mat4 mv_Mat;\n\
 uniform vec4 color;\n\
 void main() {\n\
-	//out_Color = vec4(color.xyz * dot(vert_Normal, mv_Mat*vec4(lDir.x, lDir.y, lDir.z, 0.0)) , 1.0 );\n\
-	out_Color = vec4(0.5f, 0.5f, 0.8f, 1.0f);\n\
+	out_Color = vec4(color.xyz * dot(vert_Normal, mv_Mat*vec4(lDir.x, lDir.y, lDir.z, 0.0)) , 1.0 );\n\
+	//out_Color = vec4(0.5f, 0.5f, 0.8f, 1.0f);\n\
 }";
 	void setupModel4() {
 		glGenVertexArrays(1, &modelVao);
@@ -1810,7 +1818,7 @@ void main() {\n\
 			//TRASLACION
 			glm::mat4 t = glm::translate(glm::mat4(1.0f), glm::vec3(x, y, z));
 			//MATRIZ FINAl
-			objMat = t * s;
+			objMat = t;
 
 			//MATRIX4 TO VEC4
 			objPosTrumpAux = objMat * aux;
@@ -1831,7 +1839,7 @@ void main() {\n\
 			glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mv_Mat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_modelView));
 			glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mvpMat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_MVP));
 			glUniform3f(glGetUniformLocation(modelProgram, "lPos"), lightPos.x, lightPos.y, lightPos.z);
-			glUniform4f(glGetUniformLocation(modelProgram, "color"), 0.5f, .5f, 1.f, 0.f);
+			glUniform4f(glGetUniformLocation(modelProgram, "color"), 0.183f, 0.110f, 0.121f, 0.f);
 
 			glDrawArrays(GL_TRIANGLES, 0, 20000);
 

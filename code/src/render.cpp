@@ -14,11 +14,10 @@
 
 #define M_PI 3.14159265358979323846
 
-//GLOBAL VARIABLES
-glm::mat4 myObjMat = glm::mat4(1.f);
-
-
 //variables to load an object:
+
+//variables globales
+double currentTimeSum;
 
 //Cabins
 std::vector< glm::vec3 > vertices;
@@ -55,13 +54,21 @@ glm::vec3 objPosTrump;
 glm::vec4 objPosChickenAux;
 glm::vec3 objPosChicken;
 
+//POSICIONES CABINA
+glm::vec4 objPosCabinaAux;
+glm::vec3 objPosCabina;
+
 //VECTOR UP
 glm::vec3 upVec;
 
 //CAMPOS
 //glm::vec3 camPos = glm::vec3(8.9f, 17.9f, 1.f);
-glm::vec3 camPos = glm::vec3(1.f, 1.f, 1.f);;
-glm::vec4 camPosAux;
+glm::vec3 camPosTrump = glm::vec3(1.f, 1.f, 1.f);
+glm::vec4 camPosTrumpAux;
+glm::vec3 camPosChicken = glm::vec3(1.f, 1.f, 1.f);
+glm::vec4 camPosChickenAux;
+glm::vec3 camPosCabina = glm::vec3(1.f, 1.f, 1.f);
+glm::vec4 camPosCabinaAux;
 
 //VECTOR AUX
 glm::vec4 aux = glm::vec4(1.f, 1.f, 1.f, 1.f);
@@ -232,11 +239,6 @@ void GLinit(int width, int height) {
 	/*Box::setupCube();
 	Axis::setupAxis();*/
 
-	//VARIABLES INICIALIZADAS
-	upVec.x = 0;
-	upVec.y = 1;
-	upVec.z = 0;
-
 	//CUBE
 	Cube::setupCube();
 
@@ -269,7 +271,7 @@ void GLrender(double currentTime, int counter) {
 	RV::_modelView = glm::mat4(1.f);
 	RV::_modelView = glm::translate(RV::_modelView, glm::vec3(RV::panv[0], 20.f+RV::panv[1], RV::panv[2]));
 	RV::_modelView = glm::rotate(RV::_modelView, glm::radians(30.f), glm::vec3(0.f, 1.f, 0.f));
-	//RV::_modelView = glm::rotate(RV::_modelView, RV::rota[0], glm::vec3(0.f, 1.f, 0.f));
+	RV::_modelView = glm::rotate(RV::_modelView, RV::rota[0], glm::vec3(0.f, 1.f, 0.f));
 
 
 	// render code
@@ -291,7 +293,32 @@ void GLrender(double currentTime, int counter) {
 	}
 	else if (counter == 3)
 	{
-		RV::_modelView = glm::lookAt(glm::vec3(camPos.x, camPos.y, camPos.z), glm::vec3(objPosTrump.x, objPosTrump.y, objPosTrump.z), glm::vec3(0.0f, 1.f, 0.f));
+		if (currentTimeSum <= 2 && currentTimeSum >=0)
+		{
+			RV::_modelView = glm::lookAt(glm::vec3(camPosChicken.x, camPosChicken.y, camPosChicken.z), glm::vec3(objPosChicken.x, objPosChicken.y, objPosChicken.z), glm::vec3(0.0f, 1.f, 0.f));
+		}
+		else
+		{
+			RV::_modelView = glm::lookAt(glm::vec3(camPosTrump.x, camPosTrump.y, camPosTrump.z), glm::vec3(objPosTrump.x, objPosTrump.y, objPosTrump.z), glm::vec3(0.0f, 1.f, 0.f));
+			if (currentTimeSum >= 4)
+			{
+				currentTimeSum = 0;
+			}
+		}		
+		currentTimeSum = currentTimeSum + 0.033;
+	}
+	else if (counter == 4)
+	{
+		RV::_modelView = glm::lookAt(glm::vec3(0.0f, 0.0f, 50.0f),
+			glm::vec3(0.0f, 0.0f, 0.0f),
+			glm::vec3(0.0f, 1.0f, 0.0f));
+	}
+	else if (counter == 5)
+	{
+		RV::_projection = glm::perspective(RV::FOV, (float)800 / (float)600, 0.01f, RV::zFar);
+		RV::_modelView = glm::lookAt(glm::vec3((20 * cos(2 * M_PI*0.08*currentTime + (2 * M_PI / 20))), (20 * sin(2 * M_PI*0.08*currentTime + (2 * M_PI / 20))) + 0.5, 0),
+			glm::vec3((20 * cos(2 * M_PI*0.08*currentTime + (2 * 3.14f / 20))), (20 * sin(2 * M_PI*0.08*currentTime + (2 * 3.14f / 20))), 0),
+			glm::vec3(-cos(2 * M_PI*0.03*currentTime), 0.f, sin(2 * M_PI*0.03*currentTime)));
 	}
 
 	if (counter > 1)
@@ -1183,6 +1210,7 @@ void main() {\n\
 }
 
 ////////////////////////////////////////////////// MyModel
+/////////////////////////////////////////////////  CABINS
 namespace MyLoadedModel {
 	GLuint modelVao;
 	GLuint modelVbo[3];
@@ -1296,6 +1324,21 @@ void main() {\n\
 			//MATRIZ FINAl
 			cabinas[i] = t * s;
 
+			//MATRIX4 TO VEC4
+			objPosCabinaAux = cabinas[1] * aux;
+			//VEC4 TO VEC3
+			objPosCabina = objPosCabinaAux;
+
+			//TRANSLATE ONLY CAMPOS
+			camPosCabinaAux = t * aux;
+			//VEC4 TO VEC3
+			camPosCabina = camPosCabinaAux;
+
+			//MOVE CAMERA 
+			camPosCabina.x = (camPosCabina.x - 4.f);
+			camPosCabina.y = camPosCabina.y - 1.f;
+			camPosCabina.z = camPosCabina.z - 2.f;
+
 			glUniformMatrix4fv(glGetUniformLocation(modelProgram, "objMat"), 1, GL_FALSE, glm::value_ptr(cabinas[i]));
 			glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mv_Mat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_modelView));
 			glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mvpMat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_MVP));
@@ -1314,6 +1357,7 @@ void main() {\n\
 
 
 }
+/////////////////////////////////////////////////  SOPORTESUELO
 namespace MyLoadedModel1 {
 	GLuint modelVao;
 	GLuint modelVbo[3];
@@ -1415,6 +1459,7 @@ void main() {\n\
 
 
 }
+/////////////////////////////////////////////////  SOPORTECABINAS
 namespace MyLoadedModel2 {
 	GLuint modelVao;
 	GLuint modelVbo[3];
@@ -1628,6 +1673,21 @@ void main() {\n\
 			//MATRIZ FINAl
 			objMat = t * s;
 
+			//MATRIX4 TO VEC4
+			objPosChickenAux = objMat * aux;
+			//VEC4 TO VEC3
+			objPosChicken = objPosChickenAux;
+
+			//TRANSLATE ONLY CAMPOS
+			camPosChickenAux = t * aux;
+			//VEC4 TO VEC3
+			camPosChicken = camPosChickenAux;
+
+			//MOVE CAMERA 
+			camPosChicken.x = (camPosChicken.x - 4.f);
+			camPosChicken.y = camPosChicken.y - 1.f;
+			camPosChicken.z = camPosChicken.z - 2.f;
+
 			glUniformMatrix4fv(glGetUniformLocation(modelProgram, "objMat"), 1, GL_FALSE, glm::value_ptr(objMat));
 			glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mv_Mat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_modelView));
 			glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mvpMat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_MVP));
@@ -1758,14 +1818,14 @@ void main() {\n\
 			objPosTrump = objPosTrumpAux;
 
 			//TRANSLATE ONLY CAMPOS
-			camPosAux = t * aux;
+			camPosTrumpAux = t * aux;
 			//VEC4 TO VEC3
-			camPos = camPosAux;
+			camPosTrump = camPosTrumpAux;
 
 			//MOVE CAMERA 
-			camPos.x = (camPos.x + 3.f);
-			camPos.y = camPos.y - 1.f;
-			//camPos.z = camPos.z - 1.f;
+			camPosTrump.x = (camPosTrump.x + 4.f);
+			camPosTrump.y = camPosTrump.y - 1.f;
+			camPosTrump.z = camPosTrump.z + 1.f;
 
 			glUniformMatrix4fv(glGetUniformLocation(modelProgram, "objMat"), 1, GL_FALSE, glm::value_ptr(objMat));
 			glUniformMatrix4fv(glGetUniformLocation(modelProgram, "mv_Mat"), 1, GL_FALSE, glm::value_ptr(RenderVars::_modelView));

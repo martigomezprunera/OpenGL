@@ -99,6 +99,7 @@ int main(int argc, char** argv) {
 
 	//VARIABLEs
 	int counter = 1;
+	int counterCamara = 1;
 
 	bool quit_app = false;
 	while (!quit_app) {
@@ -136,6 +137,23 @@ int main(int argc, char** argv) {
 					{
 						counter--;
 					}
+				}
+				else if (eve.key.keysym.sym == SDLK_c)
+				{
+					if (counterCamara == 1)
+					{
+						counter = 3;
+					}
+					else if (counterCamara > 1 && counterCamara < 5)
+					{
+						counter++;
+					}
+					else if (counterCamara == 5)
+					{
+						counterCamara = 1;
+						counter = 3;
+					}
+					counterCamara++;
 				}
 				break;
 			}

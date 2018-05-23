@@ -1,14 +1,14 @@
 ﻿  render.cpp
-c:\users\usuario\desktop\infograficapractica3\glframe\code\src\render.cpp(1013): warning C4305: 'inicializando': truncamiento de 'double' a 'float'
-c:\users\usuario\desktop\infograficapractica3\glframe\code\src\render.cpp(1155): warning C4244: '=': conversión de 'double' a 'float'; posible pérdida de datos
-c:\users\usuario\desktop\infograficapractica3\glframe\code\src\render.cpp(1157): warning C4244: '=': conversión de 'double' a 'float'; posible pérdida de datos
-c:\users\usuario\desktop\infograficapractica3\glframe\code\src\render.cpp(1197): warning C4305: 'inicializando': truncamiento de 'double' a 'float'
-c:\users\usuario\desktop\infograficapractica3\glframe\code\src\render.cpp(1285): warning C4244: '=': conversión de 'double' a 'float'; posible pérdida de datos
-c:\users\usuario\desktop\infograficapractica3\glframe\code\src\render.cpp(1287): warning C4244: '=': conversión de 'double' a 'float'; posible pérdida de datos
-c:\users\usuario\desktop\infograficapractica3\glframe\code\src\render.cpp(1531): warning C4305: 'inicializando': truncamiento de 'double' a 'float'
-c:\users\usuario\desktop\infograficapractica3\glframe\code\src\render.cpp(1617): warning C4244: '=': conversión de 'double' a 'float'; posible pérdida de datos
-c:\users\usuario\desktop\infograficapractica3\glframe\code\src\render.cpp(1619): warning C4244: '=': conversión de 'double' a 'float'; posible pérdida de datos
-c:\users\usuario\desktop\infograficapractica3\glframe\code\src\render.cpp(1655): warning C4305: 'inicializando': truncamiento de 'double' a 'float'
-c:\users\usuario\desktop\infograficapractica3\glframe\code\src\render.cpp(1741): warning C4244: '=': conversión de 'double' a 'float'; posible pérdida de datos
-c:\users\usuario\desktop\infograficapractica3\glframe\code\src\render.cpp(1743): warning C4244: '=': conversión de 'double' a 'float'; posible pérdida de datos
+c:\users\usuario\desktop\infograficapractica3\glframe\code\src\render.cpp(1040): warning C4305: 'inicializando': truncamiento de 'double' a 'float'
+c:\users\usuario\desktop\infograficapractica3\glframe\code\src\render.cpp(1182): warning C4244: '=': conversión de 'double' a 'float'; posible pérdida de datos
+c:\users\usuario\desktop\infograficapractica3\glframe\code\src\render.cpp(1184): warning C4244: '=': conversión de 'double' a 'float'; posible pérdida de datos
+c:\users\usuario\desktop\infograficapractica3\glframe\code\src\render.cpp(1225): warning C4305: 'inicializando': truncamiento de 'double' a 'float'
+c:\users\usuario\desktop\infograficapractica3\glframe\code\src\render.cpp(1313): warning C4244: '=': conversión de 'double' a 'float'; posible pérdida de datos
+c:\users\usuario\desktop\infograficapractica3\glframe\code\src\render.cpp(1315): warning C4244: '=': conversión de 'double' a 'float'; posible pérdida de datos
+c:\users\usuario\desktop\infograficapractica3\glframe\code\src\render.cpp(1576): warning C4305: 'inicializando': truncamiento de 'double' a 'float'
+c:\users\usuario\desktop\infograficapractica3\glframe\code\src\render.cpp(1662): warning C4244: '=': conversión de 'double' a 'float'; posible pérdida de datos
+c:\users\usuario\desktop\infograficapractica3\glframe\code\src\render.cpp(1664): warning C4244: '=': conversión de 'double' a 'float'; posible pérdida de datos
+c:\users\usuario\desktop\infograficapractica3\glframe\code\src\render.cpp(1715): warning C4305: 'inicializando': truncamiento de 'double' a 'float'
+c:\users\usuario\desktop\infograficapractica3\glframe\code\src\render.cpp(1801): warning C4244: '=': conversión de 'double' a 'float'; posible pérdida de datos
+c:\users\usuario\desktop\infograficapractica3\glframe\code\src\render.cpp(1803): warning C4244: '=': conversión de 'double' a 'float'; posible pérdida de datos
   GL_framework.vcxproj -> C:\Users\usuario\Desktop\InfoGraficaPractica3\glFrame\x64\Debug\GL_framework.exe
